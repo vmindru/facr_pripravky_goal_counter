@@ -3,10 +3,12 @@
 Save Czech FA match pages to games_database.db
 
 Usage:
-    python save_matches.py --games-url /tmp/FILE
-run).
+    python save_matches.py --games-url URL1 URL2 ...
 
-PREREQ: pip install requests beautifulsoup4 
+A new row is written to `games` for every page and the goal
+table is refreshed for that game_id (safe to re-run).
+
+PREREQ: pip install requests beautifulsoup4 lxml
 """
 
 import argparse, re, sqlite3, unicodedata
@@ -85,11 +87,6 @@ def parse_match(html: str) -> dict:
 
     return {
         "game":
-        "teams": {home_id: home_name, guest_id: guest_name},
-        "players": squad,        # { (pid, tid): (pname, tname) }
-        "goals": goal_counts     # { (pid, tid): goals_int }
-    }
-
 
 ###############################################################################
 # DB schema & helpers
@@ -117,7 +114,12 @@ CREATE TABLE IF NOT EXISTS games (
     venue          TEXT,
     spectators     INTEGER,
     halftime_score TEXT,
-    final_score    TEXT
+    final_score    TEXT,
+    home_team_goals INTEGER,
+    guest_team_goals INTEGER,
+    FOREIGN KEY(home_team_id) REFERENCES teams(team_id),
+    FOREIGN KEY(guest_team_id) REFERENCES teams(team_id)
+
 );
 CREATE TABLE IF NOT EXISTS goals (
     goal_id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -170,12 +172,12 @@ def main():
             g = data["game"]
             cur.execute("""
                 INSERT OR REPLACE INTO games
-                  (game_id, facr_game_id, date, round, home_team, guest_team,
-                   venue, spectators, halftime_score, final_score)
-                VALUES (?,?,?,?,?,?,?,?,?,?)
+                  (game_id, facr_game_id, date, round, home_team_id, guest_team_id,
+                   venue, spectators, halftime_score, final_score, home_team_goals, guest_team_goals)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (g["game_id"], g["facr_game_id"], g["date"], g["round"],
                   g["home_team_id"], g["guest_team_id"], g["venue"], g["spectators"],
-                  g["halftime_score"], g["final_score"]))
+                  g["halftime_score"], g["final_score"], g["home_team_goals"],g["guest_team_goals"]))
 
             # PLAYERS
             for (pid, tid), (pname, tname) in data["players"].items():
