@@ -7,7 +7,7 @@ grab the page source, grep for all `zapasy/zapas` and save to file
 # run the crawler
 
 ```
-./store_goals.py --games-url /tmp/BOHUN_ZAP 
+./parse_games.py --games-url /tmp/BOHUN_ZAP 
 ```
 
 ## Select goals  replace '%G1B%' by competition ID from fotbal.cz
