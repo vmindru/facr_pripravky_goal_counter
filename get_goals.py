@@ -3,12 +3,10 @@
 Save Czech FA match pages to games_database.db
 
 Usage:
-    python save_matches.py --games-url URL1 URL2 ...
+    python save_matches.py --games-url /tmp/FILE
+run).
 
-A new row is written to `games` for every page and the goal
-table is refreshed for that game_id (safe to re-run).
-
-PREREQ: pip install requests beautifulsoup4 lxml
+PREREQ: pip install requests beautifulsoup4 
 """
 
 import argparse, re, sqlite3, unicodedata
